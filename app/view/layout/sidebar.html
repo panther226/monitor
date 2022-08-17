@@ -1,0 +1,71 @@
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <a href="/" class="brand-link">
+        <img src="/public/img/nft.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+        <span class="brand-text font-weight-light">NFT Monitor</span>
+    </a>
+
+    <div class="sidebar">
+    <!--            <div class="form-inline">-->
+    <!--                <div class="input-group" data-widget="sidebar-search">-->
+    <!--                    <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">-->
+    <!--                    <div class="input-group-append">-->
+    <!--                        <button class="btn btn-sidebar">-->
+    <!--                            <i class="fas fa-search fa-fw"></i>-->
+    <!--                        </button>-->
+    <!--                    </div>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+<!--            <li class="nav-item">-->
+<!--                <a href="/" class="nav-link {% if ctx.originalUrl == '/' %} active {% endif %}">-->
+<!--                    <i class="fas fa-tachometer-alt"></i>-->
+<!--                    <p>-->
+<!--                        Dashboard-->
+<!--                    </p>-->
+<!--                </a>-->
+<!--            </li>-->
+            <li class="nav-item {% if ctx.prefixUrl == 'monitor' %} menu-open {% endif %}">
+                <a href="#" class="nav-link {% if ctx.prefixUrl == 'monitor' %} active {% endif %}">
+                    <i class="fas fa-broadcast-tower"></i>
+                    <p>
+                        监控设置
+                        <i class="fas fa-angle-left right"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="/monitor/list" class="nav-link {% if ctx.originalUrl == '/monitor/list' %} active {% endif %}">
+                            <i class="fas fa-list"></i>
+                            <p>监控列表</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="nav-item {% if ctx.prefixUrl == 'setting' %} menu-open {% endif %}">
+                <a href="#" class="nav-link {% if ctx.prefixUrl == 'setting' %} active {% endif %}">
+                    <i class="fas fa-cogs"></i>
+                    <p>
+                        系统设置
+                        <i class="fas fa-angle-left right"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    <li class="nav-item">
+                        <a href="/setting/users" class="nav-link {% if ctx.originalUrl == '/setting/users' %} active {% endif %}">
+                            <i class="fas fa-users"></i>
+                            <p>用户列表</p>
+                        </a>
+                    </li>
+<!--                    <li class="nav-item">-->
+<!--                        <a href="/setting/logs" class="nav-link">-->
+<!--                            <i class="far fa-newspaper"></i>-->
+<!--                            <p>监控日志</p>-->
+<!--                        </a>-->
+<!--                    </li>-->
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</div>
+</aside>

@@ -1,0 +1,44 @@
+{% extends "layout/normal.html" %}
+
+{% block content %}
+<section class="content">
+    <div class="container-fluid">
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th style="width: 40%;">特征名称</th>
+                <th style="width: 30%;">NFT个数</th>
+                <th style="width: 30%;">占比</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in final_data %}
+                <tr data-widget="expandable-table" aria-expanded="false">
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.count }}</td>
+                    <td>{{ item.percent }}</td>
+                </tr>
+                <tr class="expandable-body">
+                    <td colspan="3">
+                        <div class="card card-primary">
+                        <table class="table border-primary" style="width: 100%; margin: 0;">
+                            <tbody>
+                            {% for subItem in item.subTraitData %}
+                                <tr>
+                                    <td style="width: 40%;">{{ subItem.name }}</td>
+                                    <td style="width: 30%;">{{ subItem.count }}</td>
+                                    <td style="width: 30%;">{{ subItem.percent }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{% endblock %}

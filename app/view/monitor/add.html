@@ -1,0 +1,342 @@
+{% extends "layout/normal.html" %}
+
+{% block content %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+            </div>
+
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">监控设置</li>
+                    <li class="breadcrumb-item"><a href="/monitor/list">监控列表</a></li>
+                    <li class="breadcrumb-item active">添加监控</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <!-- general form elements -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">添加监控</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <input type="hidden" id="nftInfoChecked" value="0" />
+                    <form action="/monitor/add" method="post" id="add-form">
+                        <input type="hidden" id="token" name="_csrf" value="{{ csrf }}" />
+                        <div class="card-body">
+                            <div class="alert alert-info alert-dismissible">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                <h5><i class="icon fas fa-info"></i> 提示:</h5>
+                                <s>Slug 和 合约地址 二选一填写, 以 Slug 为首要判断条件</s>.<br/>
+                                <s>Slug 和 合约地址 均填写时, 以Slug为准, 自动忽略合约地址信息</s>.<br/>
+                                Slug 为NFT项目的唯一标识. 暂时不支持合约地址(多个NFT项目可能会共用同一个合约地址).<br/>
+                                特征信息可以不设置.
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label for="slug_text">Slug</label>
+                                        <input type="text" class="form-control" id="slug_text" name="slug" placeholder="例如: proof-moonbirds">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group">
+                                        <label for="contract_address_text">合约地址 (未开放)</label>
+                                        <input type="password" class="form-control" id="contract_address_text" name="contract_address" placeholder="例如: 0x000..." readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <label class="form-group">
+                                        监控条件
+                                    </label>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label>地板价</label>
+                                        <div class="form-check d-inline ml-2">
+                                            <input class="form-check-input" type="radio" id="amount_radio" value="1" name="amount_or_percent" checked>
+                                            <label for="amount_radio" class="form-check-label">金额</label>
+                                        </div>
+                                        <div class="form-check d-inline ml-2">
+                                            <input class="form-check-input" type="radio" id="percent_radio" value="2" name="amount_or_percent">
+                                            <label for="percent_radio" class="form-check-label">百分比</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <select class="form-control" name="condition">
+                                        <option value="1" selected>小于 <</option>
+                                        <option value="2">等于 ＝</option>
+                                        <option value="3">小于等于 ≤</option>
+                                        <option value="4" disabled>大于 ></option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <div id="amount_text" class="input-group">
+                                        <input type="number" id="amount_input" name="amount" class="form-control" min="0" placeholder="请输入金额">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">ETH</span>
+                                        </div>
+                                    </div>
+                                    <div id="percent_text" class="input-group" style="display: none;">
+                                        <input type="number" id="percent_input" name="percent" class="form-control" min="0" placeholder="请输入百分比">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="mt-4" id="btn-content">
+                                        <button type="button" id="check-slug" class="btn btn-info">获取特征信息</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4" id="trait_content"></div>
+                        </div>
+                        <!-- /.card-body -->
+
+                        <div class="card-footer">
+                            <button type="button" id="confirm-btn" class="btn btn-primary">确定</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block custom_js %}
+<script src="/public/plugins/jquery-validation/jquery.validate.min.js"></script>
+<script>
+    function addMonitor() {
+        const formObj = $("#add-form");
+        $.ajax({
+            url: formObj.attr('action'),
+            type: formObj.attr('method'),
+            data: formObj.serialize(),
+            dataType: 'json',
+            success: function(res) {
+                if (res.code === 0) {
+                    Swal.fire({
+                        icon: 'success',
+                        text: res.msg,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        willClose: () => {
+                            location.href = '/monitor/list';
+                        }
+                    }).then((result) => {
+                        if (result.dismiss === Swal.DismissReason.timer) {
+                            location.href = '/monitor/list';
+                        }
+                    })
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        text: res.msg,
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    text: '添加失败',
+                });
+            }
+        });
+    }
+    $(document).ready(function() {
+        $("#check-slug").click(function() {
+            const slugObj = $("#slug_text");
+            slugObj.removeClass('is-invalid');
+            const slug = slugObj.val();
+            if (slug != '') {
+                Swal.fire({
+                    text: '正在获取 NFT 信息...',
+                    showConfirmButton: false,
+                    allowEscapeKey: false,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: '/monitor/check',
+                    type: 'post',
+                    dataType: 'json',
+                    data: 'slug='+slug+'&contract_address='+$("#contract_address_text").val()+'&_csrf='+$("#token").val(),
+                    timeout: 10000,
+                    success: function(res) {
+                        if (res.code === 0) {
+                            Swal.fire({
+                                showConfirmButton: true,
+                                allowEscapeKey: true,
+                                allowOutsideClick: true,
+                                html: '<div class="card"><div class="card-header text-left">' + res.data.name +
+                                    '</div><div class="card-body"><div class="row"><div class="col-7 text-left">' +
+                                    '<p class="d-flex justify-content-between"><b>当前地板价: </b>'+res.data.stats.floor_price+' ETH</p>' +
+                                    '<p class="d-flex justify-content-between"><b>发行量: </b>'+res.data.stats.total_supply+'</p>' +
+                                    '<p class="d-flex justify-content-between"><b>总销量: </b>'+res.data.stats.total_sales+'</p></div>' +
+                                    '<div class="col-5 text-center"><img src="'+res.data.image_url+'" alt="user-avatar" class="img-circle img-fluid"></div></div></div></div>',
+                            });
+
+                            const traitRootNames = res.traitRootNames;
+                            let html = '<div class="col-12"><label class="form-group">特征</label></div>';
+                            for (let i=0; i<traitRootNames.length; i++) {
+                                const subTraitArr = Object.keys(res.data.traits[traitRootNames[i]]);
+                                html += '<div class="col-6"><div class="card collapsed-card"><div class="card-header">' +
+                                    '<h5 class="card-title"><div class="form-check">' +
+                                    '<input type="checkbox" class="form-check-input" id="trait_root_'+traitRootNames[i]+'" rel="1" rev="'+subTraitArr.length+'" value="'+traitRootNames[i]+'">' +
+                                    '<label class="form-check-label" for="trait_root_'+traitRootNames[i]+'">'+traitRootNames[i]+' <span class="ml-2 small">( '+subTraitArr.length+' )</span></label>' +
+                                    '</div></h5><div class="card-tools"><button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-plus"></i></button>' +
+                                    '</div></div><div class="card-body" id="div_root_'+traitRootNames[i]+'" style="display: none;"><div class="row">';
+                                for (let j=0; j<subTraitArr.length; j++) {
+                                    html += '<div class="col-6"><div class="form-check">' +
+                                        '<input type="checkbox" class="form-check-input" name="traits[]" id="trait_'+traitRootNames[i]+'_'+subTraitArr[j]+'" value="'+traitRootNames[i]+'|'+subTraitArr[j]+'" rel="2" rev="'+traitRootNames[i]+'">' +
+                                        '<label class="form-check-label" for="trait_'+traitRootNames[i]+'_'+subTraitArr[j]+'">'+subTraitArr[j]+' <span class="ml-2 small">( '+res.data.traits[traitRootNames[i]][subTraitArr[j]]+' )</span></label>' +
+                                        '</div></div>';
+                                }
+                                html += '</div></div></div></div>';
+                            }
+                            $("#trait_content").html(html);
+                            $("#trait_content .form-check-input").unbind().bind('click', function() {
+                                const obj = $(this);
+                                if (obj.attr('rel') == 1) {
+                                    if (obj.is(':checked')) {
+                                        $("#div_root_"+obj.val()).find('input.form-check-input').prop('checked', true);
+                                    } else {
+                                        $("#div_root_"+obj.val()).find('input.form-check-input').prop('checked', false);
+                                    }
+                                } else {
+                                    if (obj.is(':checked')) {
+                                        if ($("#trait_root_"+obj.attr('rev')).attr('rev') == $("#div_root_"+obj.attr('rev')).find('input.form-check-input:checked').length) {
+                                            $("#trait_root_"+obj.attr('rev')).prop('checked', true);
+                                        }
+                                    } else {
+                                        $("#trait_root_"+obj.attr('rev')).prop('checked', false);
+                                    }
+                                }
+                            });
+                            $("#btn-content").hide();
+                            $("#nftInfoChecked").val(1);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                text: res.msg,
+                                showConfirmButton: true,
+                                allowEscapeKey: true,
+                                allowOutsideClick: true
+                            });
+                        }
+                    },
+                    error: function(err) {
+                        console.log(err);
+                        Swal.fire({
+                            icon: 'error',
+                            text: '请求超时',
+                            showConfirmButton: true,
+                            allowEscapeKey: true,
+                            allowOutsideClick: true
+                        });
+                    }
+                });
+            } else {
+                slugObj.addClass('is-invalid');
+            }
+        });
+
+        $("#confirm-btn").click(function() {
+            $("#slug_text").removeClass('is-invalid');
+            $("#amount_input").removeClass('is-invalid');
+            $("#percent_input").removeClass('is-invalid');
+            if ($("#slug_text").val() == '') {
+                $("#slug_text").addClass('is-invalid');
+                Swal.fire({
+                    icon: 'error',
+                    text: '请输入Slug信息',
+                });
+                return;
+            }
+            const radioVal = $('input[type=radio][name=amount_or_percent]:checked').val();
+            if (radioVal == 1 && $("#amount_input").val() == '') {
+                $("#amount_input").addClass('is-invalid');
+                Swal.fire({
+                    icon: 'error',
+                    text: '请输入金额',
+                });
+                return;
+            } else if(radioVal == 2 && $("#percent_input").val() == '') {
+                $("#percent_input").addClass('is-invalid');
+                Swal.fire({
+                    icon: 'error',
+                    text: '请输入百分比',
+                });
+                return;
+            }
+
+            Swal.fire({
+                text: '正在处理...',
+                showConfirmButton: false,
+                allowEscapeKey: false,
+                allowOutsideClick: false,
+            });
+
+            if ($("#nftInfoChecked").val() == 0) {
+                $.ajax({
+                    url: '/monitor/check',
+                    type: 'post',
+                    dataType: 'json',
+                    data: 'slug='+$("#slug_text").val()+'&contract_address='+$("#contract_address_text").val()+'&_csrf='+$("#token").val(),
+                    timeout: 10000,
+                    success: function(res) {
+                        if (res.code === 0) {
+                            addMonitor();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                text: res.msg,
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            text: '添加失败',
+                        });
+                    }
+                });
+            } else {
+                addMonitor();
+            }
+        });
+
+        $('input[type=radio][name=amount_or_percent]').change(function() {
+            if(this.value == 1) {
+                $("#amount_text").show();
+                $("#percent_text").hide();
+            } else if(this.value == 2) {
+                $("#amount_text").hide();
+                $("#percent_text").show();
+            }
+        });
+    });
+</script>
+{% endblock %}

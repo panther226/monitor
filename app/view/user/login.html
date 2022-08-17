@@ -1,0 +1,115 @@
+{% extends "layout/simple.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body login-card-body">
+        <p class="login-box-msg">用户登录</p>
+
+        <form action="/login" method="post" id="login-form">
+            <div class="input-group mb-3">
+                <input type="email" name="email" class="form-control" placeholder="请输入邮箱地址">
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-envelope"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group mb-3">
+                <input type="password" name="password" class="form-control" placeholder="请输入密码">
+                <div class="input-group-append">
+                    <div class="input-group-text">
+                        <span class="fas fa-lock"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary btn-block">确定</button>
+            </div>
+        </form>
+
+        <div class="d-flex justify-content-between">
+            <a href="/forget-password">忘记密码?</a>
+            <a href="/register" class="text-center">账户注册</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script src="/public/plugins/jquery-validation/jquery.validate.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $.validator.setDefaults({
+            submitHandler: function () {
+                const formObj = $("#login-form");
+                $.ajax({
+                    url: formObj.attr('action'),
+                    type: formObj.attr('method'),
+                    data: formObj.serialize(),
+                    dataType: 'JSON',
+                    success:function(res) {
+                        if (res.code === 0) {
+                            Swal.fire({
+                                icon: 'success',
+                                text: res.msg,
+                                timer: 2000,
+                                timerProgressBar: true,
+                                willClose: () => {
+                                    location.href = '/';
+                                }
+                            }).then((result) => {
+                                if (result.dismiss === Swal.DismissReason.timer) {
+                                    location.href = '/';
+                                }
+                            })
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                text: res.msg,
+                            });
+                        }
+                    },
+                    error:function(err) {
+                        console.log(err);
+                    }
+                });
+            }
+        });
+
+        $('#login-form').validate({
+            rules: {
+                email: {
+                    required: true,
+                    email: true,
+                },
+                password: {
+                    required: true,
+                    minlength: 6
+                },
+            },
+            messages: {
+                email: {
+                    required: "请输入邮箱地址",
+                    email: "邮箱地址不正确"
+                },
+                password: {
+                    required: "请输入密码",
+                    minlength: "密码格式不正确,至少6位数"
+                },
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.input-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+    })
+</script>
+{% endblock %}

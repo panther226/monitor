@@ -1,0 +1,137 @@
+{% extends "layout/normal.html" %}
+
+{% block content %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+
+            </div>
+
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">系统设置</li>
+                    <li class="breadcrumb-item"><a href="/setting/users">用户列表</a></li>
+                    <li class="breadcrumb-item active">修改用户</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">修改用户</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form action="/setting/user/edit" method="post" id="user-edit-form">
+                        <input type="hidden" name="id" value="{{ userInfo.id }}" />
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="user-email">邮箱地址</label>
+                                <input type="email" class="form-control" id="user-email" name="email" value="{{ userInfo.email }}" placeholder="请输入邮箱地址">
+                            </div>
+                            <div class="form-group">
+                                <label for="user-password">密码</label>
+                                <input type="password" class="form-control" id="user-password" name="password" value="" placeholder="密码为空 表示不修改用户密码">
+                            </div>
+                            <div class="form-group">
+                                <div class="text-dark font-weight-bold mb-2">用户类型</div>
+                                <div class="form-check d-inline">
+                                    <input type="radio" name="user_type" class="form-check-input" value="1" {% if userInfo.type == 1 %} checked {% endif %} id="user-normal">
+                                    <label class="form-check-label" for="user-normal">普通用户</label>
+                                </div>
+                                <div class="form-check d-inline ml-3">
+                                    <input type="radio" name="user_type" class="form-check-input" value="2" {% if userInfo.type == 2 %} checked {% endif %} id="user-advanced">
+                                    <label class="form-check-label" for="user-advanced">高级用户</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="text-dark font-weight-bold mb-2">用户状态</div>
+                                <div class="form-check d-inline">
+                                    <input type="radio" name="user_status" class="form-check-input" value="0" {% if userInfo.status == 0 %} checked {% endif %} id="user-inactive">
+                                    <label class="form-check-label" for="user-inactive">未启用</label>
+                                </div>
+
+                                <div class="form-check d-inline ml-3">
+                                    <input type="radio" name="user_status" class="form-check-input" {% if userInfo.status == 1 %} checked {% endif %} value="1" id="user-active">
+                                    <label class="form-check-label" for="user-active">正常</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">确定</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block custom_js %}
+<script src="/public/plugins/jquery-validation/jquery.validate.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $.validator.setDefaults({
+            submitHandler: function () {
+                const formObj = $("#user-edit-form");
+                $.ajax({
+                    url: formObj.attr('action'),
+                    type: formObj.attr('method'),
+                    data: formObj.serialize(),
+                    dataType: 'JSON',
+                    success:function(res) {
+                        let icon = 'error';
+                        if (res.code === 0) {
+                            icon = 'success';
+                        }
+
+                        Swal.fire({
+                            icon: icon,
+                            text: res.msg,
+                        });
+                    },
+                    error:function(err) {
+                        console.log(err);
+                    }
+                });
+            }
+        });
+
+        $('#user-edit-form').validate({
+            rules: {
+                email: {
+                    required: true,
+                    email: true,
+                },
+            },
+            messages: {
+                email: {
+                    required: "请输入邮箱地址",
+                    email: "邮箱地址不正确"
+                },
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+    })
+</script>
+{% endblock %}

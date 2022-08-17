@@ -1,0 +1,166 @@
+{% extends "layout/normal.html" %}
+
+{% block content %}
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+
+            </div>
+
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">系统设置</li>
+                    <li class="breadcrumb-item active">用户列表</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row pb-3">
+            <div class="col-12">
+                <a href="/setting/user/add" class="btn btn-primary">添加用户</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">用户列表</h3>
+                    </div>
+                    <!-- ./card-header -->
+                    <div class="card-body table-responsive p-0">
+                        <table class="table table-striped projects">
+                            <thead>
+                            <tr>
+                                <th>
+                                    邮箱地址
+                                </th>
+                                <th>
+                                    账户类型
+                                </th>
+                                <th>
+                                    账户状态
+                                </th>
+                                <th class="text-right">
+                                    操作
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <input type="hidden" id="token" value="{{ csrf }}" />
+                            {% for item in users.rows %}
+                            <tr>
+                                <td>
+                                    {{ item.email }}
+                                </td>
+                                <td>
+                                    {% if item.type == 1 %}
+                                    <span class="badge badge-info">普通账户</span>
+                                    {% elif item.type == 2%}
+                                    <span class="badge badge-primary">高级账户</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.status == 1 %}
+                                    <span class="badge badge-success">正常</span>
+                                    {% else %}
+                                    <span class="badge badge-secondary">未启用</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-right">
+                                    <a class="btn btn-info btn-xs" href="/setting/user/edit/{{ item.id }}">
+                                        编辑
+                                    </a>
+                                    {% if item.status == 1 %}
+                                    <a class="btn btn-danger btn-xs operation-btn" rev="0" rel="{{ item.id }}" href="javascript:;">禁用</a>
+                                    {% else %}
+                                    <a class="btn btn-primary btn-xs operation-btn" rev="1" rel="{{ item.id }}" href="javascript:;">启用</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block custom_js %}
+<script>
+    $(document).ready(function() {
+        $(".operation-btn").click(function() {
+            const id = $(this).attr('rel');
+            const status = $(this).attr('rev');
+            let operation = '启用';
+            if (status == 0) {
+                operation = '禁用';
+            }
+            const swalObj = Swal.mixin({
+                customClass: {
+                    confirmButton: 'btn btn-success ml-3',
+                    cancelButton: 'btn btn-danger'
+                },
+                buttonsStyling: false
+            });
+
+            swalObj.fire({
+                text: "确定要"+operation+"该账户吗?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/setting/user/operation/' + id,
+                        data: "_csrf=" + $("#token").val() + "&status=" + status,
+                        type: 'post',
+                        dataType: 'json',
+                        success: function(res) {
+                            if (res.code === 0) {
+                                swalObj.fire({
+                                    text: res.msg,
+                                    icon: 'success',
+                                    timer: 2000,
+                                    timerProgressBar: true,
+                                    willClose: () => {
+                                        location.href = '/setting/users';
+                                    }
+                                }).then((result) => {
+                                    if (result.dismiss === Swal.DismissReason.timer) {
+                                        location.href = '/setting/users';
+                                    }
+                                });
+                            } else {
+                                swalObj.fire(
+                                    '',
+                                    res.msg,
+                                    'error'
+                                );
+                            }
+                        },
+                        error: function(err) {
+                            swalObj.fire(
+                                '操作失败.',
+                                'error'
+                            )
+                        }
+                    });
+
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

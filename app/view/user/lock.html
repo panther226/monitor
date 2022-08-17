@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NFT monitor | 锁屏</title>
+
+    <link rel="stylesheet" href="/public/plugins/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="/public/plugins/sweetalert2/bootstrap-4.min.css">
+    <link rel="stylesheet" href="/public/css/adminlte.min.css">
+</head>
+<body class="hold-transition lockscreen">
+<div class="lockscreen-wrapper">
+    <div class="lockscreen-logo">
+        <a href="javascript:"><b>NFT</b> Monitor</a>
+    </div>
+    <div class="lockscreen-name" style="max-width: 13.5rem; overflow: hidden; margin: 0 auto 0 8rem;white-space: nowrap;text-overflow: ellipsis;">{{ ctx.session.userinfo.email }}</div>
+
+    <div class="lockscreen-item" style="background: transparent;">
+        <div class="lockscreen-image p-0" style="top: -18px;">
+            {{ ctx.session.userinfo.img | safe }}
+        </div>
+
+        <form id="lock-form" method="post" style="margin-left: 70px;">
+            <div class="input-group">
+                <input type="password" name="password" class="form-control" placeholder="请输入账户密码">
+                <div class="input-group-append">
+                    <button class="input-group-text" style="background: #fff;">
+                        <i class="fas fa-arrow-right text-muted"></i>
+                    </button>
+                </div>
+            </div>
+
+<!--            <div class="input-group">-->
+<!--                <input type="password" name="password" class="form-control" style="border: 1px;" placeholder="请输入账户密码">-->
+
+<!--                <div class="input-group-append">-->
+<!--                    <button type="submit" class="btn">-->
+<!--                        <i class="fas fa-arrow-right text-muted"></i>-->
+<!--                    </button>-->
+<!--                </div>-->
+<!--            </div>-->
+        </form>
+    </div>
+    <div class="help-block text-center">
+        输入账户密码登录系统
+    </div>
+    <div class="text-center mt-2">
+        <a href="/login">登录其它账户</a>
+    </div>
+    <div class="lockscreen-footer text-center">
+        Copyright &copy; 2022 <b>NFT Monitor</b><br>
+        All rights reserved
+    </div>
+</div>
+
+<script src="/public/plugins/jquery/jquery.min.js"></script>
+<script src="/public/plugins/sweetalert2/sweetalert2.min.js"></script>
+<script src="/public/plugins/jquery-validation/jquery.validate.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $.validator.setDefaults({
+            submitHandler: function () {
+                const formObj = $("#lock-form");
+                $.ajax({
+                    url: formObj.attr('action'),
+                    type: formObj.attr('method'),
+                    data: formObj.serialize(),
+                    dataType: 'JSON',
+                    success:function(res) {
+                        if (res.code === 0) {
+                            Swal.fire({
+                                icon: 'success',
+                                text: res.msg,
+                                timer: 2000,
+                                timerProgressBar: true,
+                                willClose: () => {
+                                    location.href = '/';
+                                }
+                            }).then((result) => {
+                                if (result.dismiss === Swal.DismissReason.timer) {
+                                    location.href = '/';
+                                }
+                            })
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                text: res.msg,
+                            });
+                        }
+                    },
+                    error:function(err) {
+                        console.log(err);
+                    }
+                });
+            }
+        });
+
+        $('#lock-form').validate({
+            rules: {
+                password: {
+                    required: true,
+                    minlength: 6
+                },
+            },
+            messages: {
+                password: {
+                    required: "请输入密码",
+                    minlength: "密码格式不正确,至少6位数"
+                },
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.input-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+    })
+</script>
+</body>
+</html>
